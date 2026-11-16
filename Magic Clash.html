@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#100d24">
+<meta name="color-scheme" content="dark">
+<title>Magic Clash | Rise of the Shadow Monsters</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Nunito:wght@400;700;900&display=swap');
+:root{--bg:#100d24;--purple:#a875ff;--gold:#ffd783;--text:#f8f1ff;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;padding:24px 12px 40px;background:radial-gradient(ellipse at 50% -10%,#47306e 0%,transparent 55%),radial-gradient(ellipse at 0% 100%,#282050 0%,transparent 45%),var(--bg);color:var(--text);font-family:'Nunito',system-ui,sans-serif}
+button{font-family:inherit;color:#fff;cursor:pointer;border:none;-webkit-tap-highlight-color:transparent}
+.game-container{max-width:1080px;margin:auto}
+header{text-align:center;margin-bottom:22px}
+.logo{display:inline-flex;align-items:center;gap:12px}
+.logo-icon{font-size:37px;filter:drop-shadow(0 0 13px #d08aff);animation:float 3s ease-in-out infinite}
+header h1{margin:0;font-family:'Cinzel',Georgia,serif;font-size:clamp(29px,6vw,51px);font-weight:900;letter-spacing:5px;line-height:1.2;background:linear-gradient(100deg,#fff2b9,#d8a4ff,#ffb6e7,#fff2b9);background-size:250% auto;background-clip:text;-webkit-background-clip:text;color:transparent;animation:shine 7s linear infinite}
+.subtitle{color:#d7b5ff;letter-spacing:5px;font-size:11px;font-weight:900;margin:7px 0 0}
+.tagline{color:#a998c8;font-size:12px;margin-top:9px}
+@keyframes shine{to{background-position:250% center}}
+@keyframes float{50%{transform:translateY(-7px) rotate(5deg)}}
+.hud{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:15px;margin-bottom:12px}
+.hud-card{min-width:0;padding:13px 16px;background:linear-gradient(145deg,#282047,#17142e);border:1px solid #76609f66;border-radius:13px;box-shadow:0 5px 20px #0003}
+.hud-label{display:block;color:#b9a5d9;font-size:10px;font-weight:900;letter-spacing:2px;margin-bottom:7px}
+.health-row{display:flex;align-items:center;gap:10px}
+.heart{font-size:20px}
+.health-bar{flex:1;height:13px;border-radius:20px;background:#0b0920;border:1px solid #ffffff25;overflow:hidden}
+.health-fill{height:100%;width:100%;border-radius:20px;background:linear-gradient(90deg,#ff477d,#ff8eae,#ffd0d7);box-shadow:0 0 12px #ff639c;transition:width .25s}
+#hp-number{min-width:33px;font-weight:900;font-size:12px}
+.level-card{text-align:center;min-width:170px}
+.level-card strong{display:block;font-family:'Cinzel',Georgia,serif;font-size:13px;color:var(--gold);letter-spacing:1px}
+.level-card span{color:#c6b7e3;font-size:11px;font-weight:700}
+.score-card{text-align:right}
+.score-number{font-family:'Cinzel',Georgia,serif;font-weight:900;font-size:23px;color:var(--gold);text-shadow:0 0 12px #ffd78366}
+.game-frame{position:relative;overflow:hidden;border-radius:17px;padding:5px;background:linear-gradient(135deg,#f2c7ff,#9564ec,#ffb8e4,#7050c6);box-shadow:0 0 35px #a875ff40,0 18px 45px #0006}
+.canvas-wrap{position:relative;overflow:hidden;border-radius:12px;background:#24203e}
+canvas{display:block;width:100%;height:auto;aspect-ratio:960/540;touch-action:none}
+.game-overlay{position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;padding:20px;background:#100b24d9;backdrop-filter:blur(7px);text-align:center}
+.game-overlay.active{display:flex}
+.overlay-card{width:min(450px,100%);padding:30px 22px;border:1px solid #d3a9ff80;border-radius:19px;background:linear-gradient(145deg,#30214e,#17132e);box-shadow:0 0 40px #a875ff55}
+.overlay-icon{font-size:58px;animation:float 3s ease-in-out infinite}
+.overlay-card h2{font-family:'Cinzel',Georgia,serif;color:var(--gold);font-size:clamp(23px,5vw,34px);margin:12px 0}
+.overlay-card p{color:#d0c2e8;font-size:14px;line-height:1.7}
+.primary-btn{padding:13px 25px;margin-top:13px;border-radius:10px;background:linear-gradient(110deg,#9c61e8,#d65bb9);box-shadow:0 5px 20px #a45ce866;font-weight:900;letter-spacing:1px;transition:.2s}
+.primary-btn:hover{transform:translateY(-3px)}
+.status{min-height:39px;display:flex;align-items:center;justify-content:center;gap:9px;margin:10px 0 14px;padding:9px 12px;border-radius:10px;background:#251b40;border:1px solid #72539955;color:#e7d2ff;font-size:13px;font-weight:700;text-align:center}
+.status-dot{width:7px;height:7px;background:#8fffc2;border-radius:50%;box-shadow:0 0 10px #8fffc2;flex:none}
+.control-panel{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.control-group{padding:15px;background:linear-gradient(145deg,#241c42,#18142f);border:1px solid #70559566;border-radius:13px}
+.control-title{font-size:10px;letter-spacing:2px;font-weight:900;color:#b9a5d9;margin-bottom:12px}
+.button-row{display:flex;justify-content:center;gap:9px}
+.game-btn{min-width:55px;min-height:47px;padding:10px 12px;border:1px solid #ffffff30;border-radius:10px;background:linear-gradient(145deg,#7654b5,#48316f);box-shadow:0 4px 0 #302044,0 6px 12px #0004;font-size:17px;font-weight:900;transition:.1s;touch-action:none;user-select:none;-webkit-user-select:none}
+.game-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #302044;filter:brightness(1.3)}
+.jump-btn{min-width:88px;font-size:12px;background:linear-gradient(145deg,#c48a43,#8e572d)}
+.magic-btn{background:linear-gradient(145deg,#b34fc4,#7235a4)}
+.up-btn{background:linear-gradient(145deg,#448ccf,#31569e)}
+.restart-row{text-align:center;margin:17px 0;display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.restart-btn{padding:11px 22px;border:1px solid #a68ac9;border-radius:9px;background:#2b2149;color:#e9d7ff;font-weight:900;font-size:11px;letter-spacing:2px;transition:.2s}
+.restart-btn:hover{background:#49366d}
+.instructions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
+.instruction{padding:12px;background:#1c1734;border:1px solid #ffffff12;border-radius:10px;color:#bbaed6;font-size:11px;text-align:center}
+.key{display:inline-block;padding:3px 7px;margin-bottom:5px;border-radius:5px;background:#473567;color:#fff;font-weight:900}
+.footer{margin-top:25px;text-align:center;color:#82739f;font-size:10px;letter-spacing:2px}
+@media(max-width:650px){
+body{padding:15px 8px 25px}
+.hud{grid-template-columns:1fr 1fr;gap:8px}
+.level-card{grid-column:1/-1;grid-row:2}
+.hud-card{padding:10px}
+.score-number{font-size:19px}
+.control-panel{grid-template-columns:1fr;gap:9px}
+.control-group{padding:12px}
+.instructions{grid-template-columns:1fr 1fr}
+.subtitle{letter-spacing:3px}
+.logo-icon{font-size:28px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<main class="game-container">
+<header>
+  <div class="logo"><span class="logo-icon">🦄</span><h1>MAGIC CLASH</h1><span class="logo-icon">✨</span></div>
+  <p class="subtitle">RISE OF THE SHADOW MONSTERS</p>
+  <p class="tagline">✦ A magical adventure awaits, brave unicorn warrior ✦</p>
+</header>
+
+<section class="hud">
+  <div class="hud-card">
+    <span class="hud-label">♡ UNICORN HEALTH</span>
+    <div class="health-row"><span class="heart">💗</span><div class="health-bar"><div id="player-health" class="health-fill"></div></div><span id="hp-number">100</span></div>
+  </div>
+  <div class="hud-card level-card"><strong id="level-name">LEVEL 1</strong><span id="level-subtitle">ENCHANTED MEADOW</span></div>
+  <div class="hud-card score-card"><span class="hud-label">✦ YOUR SCORE</span><div class="score-number" id="score">0000</div></div>
+</section>
+
+<div class="game-frame">
+  <div class="canvas-wrap">
+    <canvas id="game" width="960" height="540"></canvas>
+    <div id="overlay" class="game-overlay">
+      <div class="overlay-card">
+        <div class="overlay-icon" id="overlay-icon">🏆</div>
+        <h2 id="overlay-title">VICTORY!</h2>
+        <p id="overlay-text"></p>
+        <button class="primary-btn" id="overlay-button">CONTINUE</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="status"><span class="status-dot"></span><span id="message">Defeat every shadow monster and save the kingdom!</span></div>
+
+<section class="control-panel">
+  <div class="control-group">
+    <div class="control-title">✦ MOVEMENT</div>
+    <div class="button-row">
+      <button class="game-btn" id="left" aria-label="Move left">◀</button>
+      <button class="game-btn" id="right" aria-label="Move right">▶</button>
+      <button class="game-btn jump-btn" id="jump">⬆ JUMP</button>
+    </div>
+  </div>
+  <div class="control-group">
+    <div class="control-title">✧ MAGIC ATTACKS</div>
+    <div class="button-row">
+      <button class="game-btn magic-btn" id="fire-left" aria-label="Cast left">◀</button>
+      <button class="game-btn up-btn" id="fire-up" aria-label="Cast up">▲</button>
+      <button class="game-btn magic-btn" id="fire-right" aria-label="Cast right">▶</button>
+    </div>
+  </div>
+</section>
+
+<div class="restart-row">
+  <button class="restart-btn" id="pause">❚❚ PAUSE</button>
+  <button class="restart-btn" id="mute">🔊 SOUND ON</button>
+  <button class="restart-btn" id="restart">↻ RESTART ADVENTURE</button>
+</div>
+
+<section class="instructions">
+  <div class="instruction"><span class="key">A / D</span><br>Move left / right</div>
+  <div class="instruction"><span class="key">W</span><br>Jump over monsters</div>
+  <div class="instruction"><span class="key">J / K / L</span><br>Cast magic spells</div>
+  <div class="instruction"><span class="key">P / M</span><br>Pause / mute</div>
+</section>
+
+<div class="footer">✦ MAGIC CLASH ✦ THE KINGDOM NEEDS YOU ✦</div>
+</main>
+
+<script>
+"use strict";
+
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+const W=canvas.width,H=canvas.height,ground=445;
+
+const hpBar=document.getElementById("player-health");
+const hpNumber=document.getElementById("hp-number");
+const message=document.getElementById("message");
+const levelLabel=document.getElementById("level-name");
+const levelSubtitle=document.getElementById("level-subtitle");
+const scoreLabel=document.getElementById("score");
+const overlay=document.getElementById("overlay");
+const pauseBtn=document.getElementById("pause");
+const muteBtn=document.getElementById("mute");
+
+const levels=[
+  {name:"Enchanted Meadow",sky:["#75b7d5","#e5c9db"],ground:"#477e58",monsters:["slime","slime","slime"],length:1800},
+  {name:"Whispering Forest",sky:["#172e43","#64718a"],ground:"#293e38",monsters:["slime","bat","bat","slime"],length:2100},
+  {name:"Forgotten Ruins",sky:["#443454","#a47d91"],ground:"#62506d",monsters:["wolf","bat","wolf","slime"],length:2300},
+  {name:"Crystal Caverns",sky:["#14264e","#5668a3"],ground:"#343c68",monsters:["golem","bat","wolf","golem"],length:2500},
+  {name:"Shadow Fortress",sky:["#100a23","#54345f"],ground:"#30213e",monsters:["wolf","golem","bat","golem"],length:2700}
+];
+
+const monsterStats={
+  slime:{hp:30,speed:1,damage:5,color:"#a65bdb"},
+  bat:{hp:20,speed:1.8,damage:5,color:"#7857b8"},
+  wolf:{hp:45,speed:2.5,damage:10,color:"#51416f"},
+  golem:{hp:100,speed:0.65,damage:15,color:"#66638e"}
+};
+
+let player,monsters=[],projectiles=[],mists=[],particles=[],stars=[],decorations=[],floatingTexts=[];
+let levelIndex=0,score=0,camera=0,gameOver=false,levelComplete=false,keys={};
+let audioContext=null,lastDamage=0,lastAttack=0,animationFrame=0,screenShake=0;
+let soundEnabled=true,started=false,paused=false;
+
+function sound(frequency=440,duration=0.12,type="sine"){
+  if(!soundEnabled)return;
+  try{
+    if(!audioContext)audioContext=new(window.AudioContext||window.webkitAudioContext)();
+    if(audioContext.state==="suspended")audioContext.resume();
+    const o=audioContext.createOscillator(),g=audioContext.createGain();
+    o.type=type;o.frequency.value=frequency;
+    g.gain.setValueAtTime(0.09,audioContext.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,audioContext.currentTime+duration);
+    o.connect(g);g.connect(audioContext.destination);
+    o.start();o.stop(audioContext.currentTime+duration);
+  }catch(e){}
+}
+
+function makePlayer(hp=100){
+  return{x:80,y:ground-83,w:68,h:83,hp,vy:0,speed:4.6,jumping:false,facing:1,invincible:0};
+}
+
+function loadLevel(index,keepHp){
+  levelIndex=index;
+  const level=levels[index];
+  player=makePlayer(keepHp===undefined?100:keepHp);
+  projectiles=[];particles=[];floatingTexts=[];
+  camera=0;levelComplete=false;gameOver=false;screenShake=0;paused=false;
+  pauseBtn.textContent="❚❚ PAUSE";
+
+  monsters=level.monsters.map((type,i)=>{
+    const s=monsterStats[type];
+    return{
+      type,x:450+i*380,
+      y:type==="bat"?250:ground-60,
+      w:type==="golem"?85:60,h:type==="golem"?85:60,
+      hp:s.hp,maxHp:s.hp,speed:s.speed+index*.15,
+      damage:s.damage,color:s.color,alive:true,phase:Math.random()*6
+    };
+  });
+
+  mists=[];
+  for(let i=600;i<level.length-150;i+=650)mists.push({x:i,w:120,phase:Math.random()*6});
+
+  stars=[];
+  for(let i=0;i<70;i++)stars.push({x:Math.random()*W,y:Math.random()*320,size:Math.random()*2+1,phase:Math.random()*6});
+
+  decorations=[];
+  for(let i=0;i<level.length;i+=130+Math.random()*150)
+    decorations.push({x:i,size:20+Math.random()*30,phase:Math.random()*6,type:Math.floor(Math.random()*4)});
+
+  levelLabel.textContent="LEVEL "+(index+1);
+  levelSubtitle.textContent=level.name.toUpperCase();
+  message.textContent="Defeat every shadow monster!";
+  overlay.classList.remove("active");
+  updateUI();
+}
+
+function updateUI(){
+  hpBar.style.width=Math.max(0,player.hp)+"%";
+  hpNumber.textContent=Math.max(0,Math.ceil(player.hp));
+  scoreLabel.textContent=String(score).padStart(4,"0");
+}
+
+function particleBurst(x,y,color,count=12){
+  for(let i=0;i<count;i++){
+    const a=Math.random()*Math.PI*2,s=Math.random()*4+1;
+    particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:25+Math.random()*20,maxLife:45,color,size:Math.random()*5+2});
+  }
+}
+
+function floatingText(x,y,text,color="#ffe08a"){floatingTexts.push({x,y,text,color,life:55});}
+
+function showOverlay(icon,title,text,buttonText,action){
+  document.getElementById("overlay-icon").textContent=icon;
+  document.getElementById("overlay-title").textContent=title;
+  document.getElementById("overlay-text").textContent=text;
+  document.getElementById("overlay-button").textContent=buttonText;
+  document.getElementById("overlay-button").onclick=action;
+  overlay.classList.add("active");
+}
+
+function fire(direction){
+  if(!started||paused||gameOver||levelComplete)return;
+  if(Date.now()-lastAttack<230)return;
+  lastAttack=Date.now();
+
+  let vx=0,vy=0,x=player.x+player.w/2,y=player.y+30;
+  if(direction==="right")vx=10;
+  if(direction==="left")vx=-10;
+  if(direction==="up"){vy=-10;y=player.y+5;}
+  else{player.facing=direction==="right"?1:-1;x+=player.facing*32;}
+
+  projectiles.push({x,y,vx,vy,life:100,rotation:0,color:Math.random()>.5?"#d9a0ff":"#8eeaff"});
+  sound(650,.13,"triangle");
+  sound(950,.08,"sine");
+}
+
+function roundedRect(x,y,w,h,r,color){
+  ctx.fillStyle=color;
+  ctx.beginPath();
+  if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h);
+  ctx.fill();
+}
+
+function drawBackground(){
+  const level=levels[levelIndex];
+  const gradient=ctx.createLinearGradient(0,0,0,H);
+  gradient.addColorStop(0,level.sky[0]);
+  gradient.addColorStop(1,level.sky[1]);
+  ctx.fillStyle=gradient;
+  ctx.fillRect(0,0,W,H);
+
+  for(let i=0;i<10;i++){
+    const x=((i*190-camera*.2)%1300+1300)%1300-150;
+    ctx.fillStyle=levelIndex===0?"#729b91":"#292c50";
+    ctx.globalAlpha=.65;
+    ctx.beginPath();
+    ctx.moveTo(x,ground);
+    ctx.lineTo(x+95,155+(i%3)*42);
+    ctx.lineTo(x+200,ground);
+    ctx.fill();
+  }
+  ctx.globalAlpha=1;
+
+  stars.forEach(s=>{
+    const x=(s.x-camera*.08+W*2)%W;
+    ctx.globalAlpha=.35+Math.sin(animationFrame*.04+s.phase)*.35;
+    ctx.fillStyle="#fff7d9";
+    ctx.beginPath();ctx.arc(x,s.y,s.size,0,Math.PI*2);ctx.fill();
+  });
+  ctx.globalAlpha=1;
+
+  ctx.save();
+  ctx.shadowColor="#fff2c9";ctx.shadowBlur=40;
+  ctx.fillStyle=levelIndex===0?"#fff0bc":"#d9c9ff";
+  ctx.globalAlpha=.8;
+  ctx.beginPath();ctx.arc(790,100,34,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle=level.ground;
+  ctx.fillRect(0,ground,W,H-ground);
+  const gg=ctx.createLinearGradient(0,ground,0,H);
+  gg.addColorStop(0,"#ffffff18");gg.addColorStop(1,"#00000035");
+  ctx.fillStyle=gg;
+  ctx.fillRect(0,ground,W,H-ground);
+  ctx.fillStyle="#ffffff55";
+  ctx.fillRect(0,ground,W,3);
+
+  decorations.forEach(d=>{
+    const x=d.x-camera;
+    if(x<-50||x>W+50)return;
+    ctx.globalAlpha=.25+Math.sin(animationFrame*.04+d.phase)*.15;
+    ctx.fillStyle=levelIndex===0?"#d4f5c0":"#b7a8ed";
+    if(d.type===0){ctx.fillRect(x,ground+18,3,12);ctx.fillRect(x+5,ground+22,3,9);}
+    else if(d.type===1){ctx.beginPath();ctx.arc(x,ground+28,3,0,Math.PI*2);ctx.fill();}
+    else ctx.fillRect(x,ground+35,d.size*.3,3);
+  });
+  ctx.globalAlpha=1;
+
+  decorations.forEach(d=>{
+    const x=d.x-camera;
+    if(x<-80||x>W+80)return;
+    if(d.type===2){
+      ctx.fillStyle=levelIndex===0?"#315e43":"#282b47";
+      ctx.fillRect(x-5,ground-90,10,90);
+      ctx.fillStyle=levelIndex===0?"#356e50":"#393957";
+      for(let j=0;j<3;j++){
+        ctx.beginPath();
+        ctx.moveTo(x-38+j*3,ground-60-j*30);
+        ctx.lineTo(x,ground-145-j*10);
+        ctx.lineTo(x+38-j*3,ground-60-j*30);
+        ctx.fill();
+      }
+    }
+    if(d.type===3){
+      ctx.save();
+      ctx.shadowColor="#9feaff";ctx.shadowBlur=15;
+      ctx.fillStyle="#85c9ed88";
+      ctx.beginPath();
+      ctx.moveTo(x,ground-8);ctx.lineTo(x-10,ground-55);ctx.lineTo(x,ground-95);ctx.lineTo(x+14,ground-48);ctx.lineTo(x+8,ground-8);
+      ctx.fill();
+      ctx.restore();
+    }
+  });
+}
+
+function drawUnicorn(){
+  const x=player.x-camera,y=player.y;
+  const bounce=player.jumping?0:Math.sin(animationFrame*.17)*2;
+
+  ctx.save();
+  ctx.translate(x+player.w/2,y+43+bounce);
+  ctx.scale(player.facing,1);
+
+  ctx.fillStyle="#160c2d55";
+  ctx.beginPath();ctx.ellipse(0,42,32,8,0,0,Math.PI*2);ctx.fill();
+
+  ctx.strokeStyle="#e18aff";ctx.lineWidth=11;ctx.lineCap="round";
+  ctx.beginPath();ctx.moveTo(-21,5);ctx.bezierCurveTo(-48,4,-49,30,-39,32);ctx.stroke();
+  ctx.strokeStyle="#ff9bdc";ctx.lineWidth=4;
+  ctx.beginPath();ctx.moveTo(-22,9);ctx.quadraticCurveTo(-42,16,-39,29);ctx.stroke();
+
+  for(let i=0;i<4;i++){
+    const lx=-18+i*12;
+    const mv=player.jumping?0:Math.sin(animationFrame*.2+i)*5;
+    ctx.strokeStyle="#f4eaff";ctx.lineWidth=8;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(lx,19);ctx.lineTo(lx+mv,37);ctx.stroke();
+    ctx.strokeStyle="#c79bff";ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(lx+2,32);ctx.lineTo(lx+mv,38);ctx.stroke();
+  }
+
+  const bg=ctx.createLinearGradient(0,-15,0,25);
+  bg.addColorStop(0,"#fffaff");bg.addColorStop(1,"#d5c3ff");
+  ctx.fillStyle=bg;
+  ctx.beginPath();ctx.ellipse(0,4,30,20,0,0,Math.PI*2);ctx.fill();
+
+  ctx.fillStyle="#f0e7ff";
+  ctx.beginPath();ctx.moveTo(12,-5);ctx.lineTo(25,-34);ctx.lineTo(42,-5);ctx.fill();
+
+  ctx.fillStyle="#fff7ff";
+  ctx.beginPath();ctx.ellipse(29,-29,21,18,-.2,0,Math.PI*2);ctx.fill();
+
+  ctx.beginPath();ctx.moveTo(18,-40);ctx.lineTo(16,-60);ctx.lineTo(31,-41);ctx.fill();
+  ctx.fillStyle="#ffb8e7";
+  ctx.beginPath();ctx.moveTo(20,-44);ctx.lineTo(19,-55);ctx.lineTo(27,-43);ctx.fill();
+
+  ctx.save();
+  ctx.shadowColor="#ffe6a1";ctx.shadowBlur=14;
+  ctx.fillStyle="#ffd76f";
+  ctx.beginPath();ctx.moveTo(33,-41);ctx.lineTo(49,-77);ctx.lineTo(43,-39);ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle="#fff8c8";ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(39,-47);ctx.lineTo(45,-60);ctx.stroke();
+
+  ctx.fillStyle="#a95fdb";
+  ctx.beginPath();ctx.arc(16,-44,14,0,Math.PI*2);ctx.arc(6,-34,12,0,Math.PI*2);ctx.arc(24,-34,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#ff9bdb";
+  ctx.beginPath();ctx.moveTo(21,-46);ctx.quadraticCurveTo(38,-64,32,-37);ctx.quadraticCurveTo(23,-31,21,-46);ctx.fill();
+
+  ctx.fillStyle="#39234f";
+  ctx.beginPath();ctx.ellipse(39,-29,3,5,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="white";ctx.fillRect(40,-32,2,2);
+
+  ctx.fillStyle="#ffb6d6";ctx.globalAlpha=.6;
+  ctx.beginPath();ctx.arc(43,-20,4,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=1;
+
+  ctx.fillStyle="#ffce6b";
+  ctx.beginPath();ctx.arc(-5,2,5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#fff1b0";
+  ctx.beginPath();ctx.arc(-5,2,2,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+
+  if(player.invincible>0){
+    ctx.save();
+    ctx.strokeStyle="#9bf5ff";ctx.lineWidth=3;
+    ctx.globalAlpha=.5+Math.sin(animationFrame*.4)*.3;
+    ctx.shadowColor="#8beeff";ctx.shadowBlur=15;
+    ctx.beginPath();ctx.arc(x+34,y+40,49,0,Math.PI*2);ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawMonster(m){
+  const x=m.x-camera;
+  const y=m.y+Math.sin(animationFrame*.08+m.phase)*4;
+
+  ctx.save();
+  ctx.fillStyle="#10091e66";
+  ctx.beginPath();ctx.ellipse(x+m.w/2,ground-3,m.w/2,9,0,0,Math.PI*2);ctx.fill();
+
+  ctx.fillStyle=m.color;
+
+  if(m.type==="slime"){
+    ctx.beginPath();
+    ctx.moveTo(x,y+45);
+    ctx.quadraticCurveTo(x-8,y+3,x+28,y+8);
+    ctx.quadraticCurveTo(x+63,y+3,x+57,y+45);
+    ctx.quadraticCurveTo(x+30,y+65,x,y+45);
+    ctx.fill();
+    ctx.fillStyle="#ffffff35";
+    ctx.beginPath();ctx.ellipse(x+18,y+22,9,5,-.4,0,Math.PI*2);ctx.fill();
+  }
+
+  if(m.type==="bat"){
+    const wing=Math.sin(animationFrame*.25+m.phase)*12;
+    ctx.beginPath();
+    ctx.moveTo(x+28,y+20);ctx.lineTo(x-10,y+wing);ctx.lineTo(x+5,y+47);ctx.lineTo(x+28,y+36);
+    ctx.lineTo(x+58,y+wing);ctx.lineTo(x+66,y+47);ctx.lineTo(x+30,y+39);
+    ctx.fill();
+    ctx.beginPath();ctx.ellipse(x+30,y+28,21,24,0,0,Math.PI*2);ctx.fill();
+  }
+
+  if(m.type==="wolf"){
+    ctx.beginPath();ctx.ellipse(x+30,y+37,32,19,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(x+9,y+26);ctx.lineTo(x+6,y-5);ctx.lineTo(x+28,y+14);ctx.lineTo(x+51,y-5);ctx.lineTo(x+52,y+29);
+    ctx.fill();
+    ctx.beginPath();ctx.moveTo(x+39,y+22);ctx.lineTo(x+65,y+29);ctx.lineTo(x+48,y+40);ctx.fill();
+    ctx.fillStyle="#6e5a8c";
+    ctx.beginPath();ctx.moveTo(x+8,y+3);ctx.lineTo(x+12,y+21);ctx.lineTo(x+23,y+17);ctx.fill();
+  }
+
+  if(m.type==="golem"){
+    roundedRect(x+5,y+18,76,66,12,m.color);
+    ctx.fillStyle=m.color;
+    ctx.beginPath();ctx.arc(x+43,y+16,33,0,Math.PI*2);ctx.fill();
+    roundedRect(x+11,y+68,19,22,5,"#49466f");
+    roundedRect(x+57,y+68,19,22,5,"#49466f");
+    ctx.fillStyle="#aaa2d0";
+    ctx.fillRect(x+17,y+2,15,5);
+    ctx.fillRect(x+49,y+7,14,5);
+    ctx.fillStyle="#7a77a9";
+    ctx.fillRect(x+15,y+45,55,4);
+  }
+
+  ctx.save();
+  ctx.shadowColor="#ff67dc";ctx.shadowBlur=15;
+  ctx.fillStyle="#ffb0ed";
+  ctx.beginPath();
+  ctx.ellipse(x+20,y+25,4,6,0,0,Math.PI*2);
+  ctx.ellipse(x+40,y+25,4,6,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  roundedRect(x-2,y-15,m.w+4,7,4,"#171124");
+  roundedRect(x-1,y-14,(m.w+2)*Math.max(0,m.hp/m.maxHp),5,3,"#ff70c8");
+  ctx.restore();
+}
+
+function drawMagic(){
+  projectiles.forEach(p=>{
+    const x=p.x-camera;
+    const pulse=1+Math.sin(animationFrame*.3+p.rotation)*.15;
+    ctx.save();
+    ctx.translate(x,p.y);ctx.rotate(p.rotation);ctx.scale(pulse,pulse);
+    ctx.shadowBlur=23;ctx.shadowColor=p.color;
+    const g=ctx.createRadialGradient(0,0,1,0,0,16);
+    g.addColorStop(0,"#ffffff");g.addColorStop(.35,p.color);g.addColorStop(1,"#8246ed");
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.arc(0,0,14,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#fff";ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(0,0,18,0,Math.PI*2);ctx.stroke();
+    ctx.restore();
+  });
+}
+
+function drawMist(){
+  mists.forEach(m=>{
+    const x=m.x-camera;
+    const wave=Math.sin(animationFrame*.035+m.phase)*6;
+    ctx.save();
+    ctx.globalAlpha=.3;ctx.fillStyle="#e1dfff";
+    for(let i=0;i<5;i++){
+      ctx.beginPath();
+      ctx.ellipse(x+i*25,ground-12+wave+i*2,40,15,0,0,Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  });
+}
+
+function update(){
+  if(!started||paused||gameOver||levelComplete)return;
+  animationFrame++;
+
+  let moving=false;
+  if(keys.a||keys.arrowleft){player.x-=player.speed;player.facing=-1;moving=true;}
+  if(keys.d||keys.arrowright){player.x+=player.speed;player.facing=1;moving=true;}
+
+  if((keys.w||keys.arrowup)&&!player.jumping){
+    player.vy=-14;player.jumping=true;
+    sound(330,.12,"triangle");
+    particleBurst(player.x+30,ground-5,"#e7aaff",5);
+  }
+
+  player.y+=player.vy;
+  player.vy+=.62;
+  if(player.y>=ground-player.h){player.y=ground-player.h;player.vy=0;player.jumping=false;}
+
+  const inMist=mists.some(m=>player.x+player.w>m.x&&player.x<m.x+m.w);
+  if(inMist&&moving)player.x+=player.facing*-.8;
+
+  player.x=Math.max(0,Math.min(levels[levelIndex].length-80,player.x));
+  camera=Math.max(0,Math.min(levels[levelIndex].length-W,player.x-260));
+
+  if(player.invincible>0)player.invincible--;
+
+  projectiles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life--;p.rotation+=.12;});
+  projectiles=projectiles.filter(p=>p.life>0);
+
+  monsters.forEach(m=>{
+    if(!m.alive)return;
+    const distance=player.x-m.x;
+
+    if(m.type==="bat"){
+      m.x+=Math.sign(distance)*m.speed*.7;
+      // Swoop low enough to be hit by sideways spells and to threaten the unicorn
+      m.y=285+Math.sin(animationFrame*.05+m.phase)*70;
+    }else{
+      m.x+=Math.sign(distance)*m.speed;
+    }
+
+    const touching=Math.abs(player.x-m.x)<(player.w+m.w)/2&&Math.abs(player.y-m.y)<(player.h+m.h)/2;
+
+    if(touching&&player.invincible<=0&&Date.now()-lastDamage>850){
+      player.hp-=m.damage;
+      player.invincible=55;
+      lastDamage=Date.now();
+      screenShake=9;
+      particleBurst(player.x+30,player.y+35,"#ff82a8",12);
+      floatingText(player.x,player.y-15,"-"+m.damage,"#ff8cae");
+      sound(130,.2,"sawtooth");
+      updateUI();
+    }
+
+    projectiles.forEach(p=>{
+      if(p.life>0&&p.x>m.x-10&&p.x<m.x+m.w+10&&p.y>m.y-5&&p.y<m.y+m.h+5){
+        p.life=0;
+        m.hp-=25;
+        particleBurst(p.x,p.y,"#d9a0ff",9);
+        sound(240,.08,"triangle");
+        if(m.hp<=0){
+          m.alive=false;
+          const points=m.type==="golem"?100:25;
+          score+=points;
+          particleBurst(m.x+m.w/2,m.y+20,m.color,24);
+          floatingText(m.x,m.y-10,"+"+points,"#ffe08a");
+          sound(550,.25,"sine");
+          updateUI();
+        }
+      }
+    });
+  });
+
+  particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.05;p.life--;});
+  particles=particles.filter(p=>p.life>0);
+  floatingTexts.forEach(t=>{t.y-=.7;t.life--;});
+  floatingTexts=floatingTexts.filter(t=>t.life>0);
+  if(screenShake>0)screenShake*=.85;
+
+  if(player.hp<=0){
+    player.hp=0;gameOver=true;
+    message.textContent="Your magic has faded...";
+    sound(100,.5,"sawtooth");
+    showOverlay("💔","GAME OVER","The shadows have won this time. Your score: "+score+". Be brave and try again!","TRY AGAIN",restartGame);
+    updateUI();
+    return;
+  }
+
+  if(monsters.every(m=>!m.alive)){
+    levelComplete=true;
+    if(levelIndex<levels.length-1){
+      const healed=Math.min(100,player.hp+35);
+      const gained=Math.round(healed-player.hp);
+      message.textContent="Level complete! The unicorn rests and recovers "+gained+" health.";
+      sound(720,.3,"sine");
+      showOverlay("🌟","LEVEL COMPLETE!","Amazing work! You conquered "+levels[levelIndex].name+". Score: "+score+". You recover "+gained+" health before the next area.","NEXT LEVEL ➜",function(){
+        loadLevel(levelIndex+1,healed);
+        sound(520,.25,"sine");
+      });
+    }else{
+      score+=250;
+      updateUI();
+      message.textContent="The kingdom has been saved!";
+      sound(850,.5,"sine");
+      showOverlay("👑","YOU ARE A LEGEND!","You defeated all five levels and saved the magical kingdom! Final score: "+score+"!","PLAY AGAIN",restartGame);
+    }
+  }
+
+  updateUI();
+}
+
+function draw(){
+  ctx.save();
+  if(screenShake>0.5)ctx.translate((Math.random()-.5)*screenShake,(Math.random()-.5)*screenShake);
+
+  drawBackground();
+  drawMist();
+  monsters.forEach(m=>{if(m.alive)drawMonster(m);});
+  drawMagic();
+
+  particles.forEach(p=>{
+    ctx.save();
+    ctx.globalAlpha=Math.max(0,p.life/p.maxLife);
+    ctx.fillStyle=p.color;ctx.shadowColor=p.color;ctx.shadowBlur=10;
+    ctx.beginPath();ctx.arc(p.x-camera,p.y,p.size,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  });
+
+  floatingTexts.forEach(t=>{
+    ctx.save();
+    ctx.globalAlpha=t.life/55;
+    ctx.fillStyle=t.color;
+    ctx.font="bold 18px Nunito, sans-serif";
+    ctx.textAlign="center";
+    ctx.shadowColor="#000";ctx.shadowBlur=5;
+    ctx.fillText(t.text,t.x-camera,t.y);
+    ctx.restore();
+  });
+
+  drawUnicorn();
+
+  if(levelIndex===1||levelIndex===4){
+    const fog=ctx.createLinearGradient(0,300,0,540);
+    fog.addColorStop(0,"rgba(190,190,220,0)");
+    fog.addColorStop(1,"rgba(190,190,220,.2)");
+    ctx.fillStyle=fog;
+    ctx.fillRect(0,300,W,240);
+  }
+  ctx.restore();
+
+  ctx.save();
+  ctx.fillStyle="#ffffffa0";
+  ctx.font="bold 11px Nunito, sans-serif";
+  ctx.textAlign="right";
+  const left=monsters.filter(m=>m.alive).length;
+  ctx.fillText("AREA "+(levelIndex+1)+" / 5  ·  MONSTERS LEFT: "+left,W-18,25);
+  ctx.restore();
+}
+
+// Fixed 60 updates per second so the game runs at the same speed on 60/120/144 Hz screens
+const STEP=1000/60;
+let lastTime=0,acc=0;
+function gameLoop(t){
+  acc+=Math.min(100,t-lastTime);
+  lastTime=t;
+  while(acc>=STEP){update();acc-=STEP;}
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+function restartGame(){
+  score=0;lastDamage=0;lastAttack=0;keys={};started=true;
+  loadLevel(0);
+  sound(450,.2);
+}
+
+function togglePause(){
+  if(!started||gameOver||levelComplete)return;
+  paused=!paused;
+  keys={};
+  pauseBtn.textContent=paused?"▶ RESUME":"❚❚ PAUSE";
+  message.textContent=paused?"Paused. Press P to resume.":"Defeat every shadow monster!";
+}
+
+function toggleSound(){
+  soundEnabled=!soundEnabled;
+  muteBtn.textContent=soundEnabled?"🔊 SOUND ON":"🔇 SOUND OFF";
+}
+
+document.addEventListener("keydown",e=>{
+  const key=e.key.toLowerCase();
+  if(["arrowleft","arrowright","arrowup"," "].includes(key))e.preventDefault();
+  if(e.repeat&&(key==="p"||key==="m"))return;
+  keys[key]=true;
+  if(key==="j")fire("left");
+  if(key==="k")fire("up");
+  if(key==="l"||key===" ")fire("right");
+  if(key==="p")togglePause();
+  if(key==="m")toggleSound();
+});
+document.addEventListener("keyup",e=>{keys[e.key.toLowerCase()]=false;});
+window.addEventListener("blur",()=>{keys={};if(started&&!gameOver&&!levelComplete&&!paused)togglePause();});
+
+function holdButton(id,key){
+  const b=document.getElementById(id);
+  b.addEventListener("pointerdown",e=>{e.preventDefault();keys[key]=true;b.setPointerCapture(e.pointerId);});
+  ["pointerup","pointercancel","lostpointercapture"].forEach(n=>b.addEventListener(n,()=>{keys[key]=false;}));
+}
+function tapButton(id,dir){
+  document.getElementById(id).addEventListener("pointerdown",e=>{e.preventDefault();fire(dir);});
+}
+
+holdButton("left","a");holdButton("right","d");holdButton("jump","w");
+tapButton("fire-left","left");tapButton("fire-up","up");tapButton("fire-right","right");
+
+document.getElementById("restart").addEventListener("click",restartGame);
+pauseBtn.addEventListener("click",togglePause);
+muteBtn.addEventListener("click",toggleSound);
+
+loadLevel(0);
+showOverlay("🦄","MAGIC CLASH","Defeat every shadow monster in all 5 realms. Move with A/D, jump with W, and cast spells with J, K and L. On a phone, use the buttons below.","START ADVENTURE",function(){
+  started=true;
+  overlay.classList.remove("active");
+  sound(450,.2);
+});
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>
