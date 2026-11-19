@@ -186,7 +186,7 @@ function build(i){clearWorld();lvl=i;const th=TH[i%TH.length],ch=CH[sel];
  for(let x=6;x<L;x+=2.5){const f=S(.18,[0xffd1e6,0xfff3a8,0xffffff][x%3],x+Math.random()*3,.2,1.5+Math.random()*3);add(f)}
  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.1,.1,6,8),M(0xffffff));pole.position.set(L,3,0);add(pole);
  const fl=new THREE.Mesh(new THREE.BoxGeometry(2,1.2,.1),M(0xff8fb1));fl.position.set(L+1,5.3,0);add(fl);
- au();camX=0;wv=0;dk=0;waveX=L*.55;bf=[0,0,0,0,0,0];chg=-1;bomb=0;gemsUI();decor(th,L);pm=critter(ch.c,ch.ear);pfx(pm);scene.add(pm);shad=new THREE.Mesh(new THREE.CircleGeometry(.6,16),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.28}));shad.rotation.x=-Math.PI/2;add(shad);
+ au();camX=0;wv=0;dk=0;waveX=L*.15;bf=[0,0,0,0,0,0];chg=-1;bomb=0;gemsUI();decor(th,L);pm=critter(ch.c,ch.ear);pfx(pm);scene.add(pm);shad=new THREE.Mesh(new THREE.CircleGeometry(.6,16),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.28}));shad.rotation.x=-Math.PI/2;add(shad);
  G={x:0,y:0,vy:0,hp:ch.hp,max:ch.hp,face:1,inv:0,ch};
  const n=i===0?16:10+i*3,types=['blob'];if(i>=1)types.push('flyer');if(i>=2)types.push('mage');if(i>=3)types.push('charger');if(i>=4)types.push('ghost');if(i>=3)types.push('spike');if(i>=5)types.push('brute');
  for(let k=0;k<n;k++){const x=22+(L-50)*(k/n)+Math.random()*6,t=types[Math.floor(Math.random()*types.length)];spawn(t,x,i)}
