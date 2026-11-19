@@ -320,5 +320,14 @@ addEventListener('pointerdown',au);addEventListener('keydown',au);$('mt').textCo
 $('gems').onclick=e=>{const el=e.target.closest('.gm');if(el&&el.dataset.i!==undefined)useGem(+el.dataset.i)};
 menu();requestAnimationFrame(loop);
 </script>
+ <script>
+(function () {
+  const script = document.createElement("script");
+  script.src =
+    "https://dim1024.github.io/VexIQ-Adapter/vex-controller.js?v=" +
+    Date.now();
+  document.body.appendChild(script);
+})();
+</script>
 </body>
 </html>
